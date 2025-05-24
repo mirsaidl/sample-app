@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get install -y curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    pip install --no-cache-dir flask requests python-dotenv
+    pip install --no-cache-dir flask requests
 
 # Copy application files
 COPY ./static /home/myapp/static/

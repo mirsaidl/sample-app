@@ -17,7 +17,7 @@ cp Dockerfile tempdir/
 cd tempdir
 
 # Build Docker image
-docker build -t weather-app .
+docker build -t random-facts-app .
 
 # Stop and remove any container using port 5050
 EXISTING_PORT=$(docker ps --filter "publish=5050" -q)
@@ -28,15 +28,14 @@ if [ -n "$EXISTING_PORT" ]; then
 fi
 
 # Stop and remove old container if exists
-docker stop weather-app-container 2>/dev/null || true
-docker rm weather-app-container 2>/dev/null || true
+docker stop random-facts-container 2>/dev/null || true
+docker rm random-facts-container 2>/dev/null || true
 
 # Run container
 docker run -d \
-    --name weather-app-container \
+    --name random-facts-container \
     -p 5050:5050 \
-    -e WEATHER_API_KEY=${WEATHER_API_KEY:-da7de5db55d2ecdb6209c17c812f34f0} \
-    weather-app
+    random-facts-app
 
 # Show running containers
 docker ps -a

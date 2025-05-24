@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App</title>
+    <title>Random Facts App</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #00b4db, #0083b0);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -21,123 +21,109 @@
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
+            text-align: center;
         }
         h1 {
-            text-align: center;
             color: #333;
             margin-bottom: 30px;
         }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
         button {
-            padding: 10px 20px;
-            background: #0083b0;
+            padding: 12px 24px;
+            background: #667eea;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background 0.3s;
+            font-size: 16px;
+            margin-bottom: 20px;
         }
         button:hover {
-            background: #00b4db;
+            background: #764ba2;
         }
-        #weather-info {
+        #fact-container {
             display: none;
             background: #f8f9fa;
             padding: 20px;
             border-radius: 10px;
             margin-top: 20px;
+            text-align: left;
         }
-        .weather-detail {
-            margin: 10px 0;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+        .fact-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .fact-source {
+            font-size: 14px;
+            color: #666;
+        }
+        .fact-source a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .fact-source a:hover {
+            text-decoration: underline;
         }
         .error {
-            color: red;
-            text-align: center;
+            color: #dc3545;
             margin-top: 20px;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+            font-style: italic;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Weather App</h1>
-        <div class="search-box">
-            <input type="text" id="city-input" placeholder="Enter city name" required>
-            <button onclick="getWeather()">Search</button>
-        </div>
-        <div id="weather-info"></div>
+        <h1>Random Fun Facts</h1>
+        <button onclick="getFact()">Get Random Fact</button>
+        <div id="loading" class="loading">Loading...</div>
+        <div id="fact-container"></div>
     </div>
 
     <script>
-        function getWeather() {
-            const cityInput = document.getElementById('city-input');
-            const weatherInfo = document.getElementById('weather-info');
-            const city = cityInput.value.trim();
+        function getFact() {
+            const factContainer = document.getElementById('fact-container');
+            const loading = document.getElementById('loading');
+            
+            loading.style.display = 'block';
+            factContainer.style.display = 'none';
 
-            if (!city) {
-                alert('Please enter a city name');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('city', city);
-
-            fetch('/weather', {
-                method: 'POST',
-                body: formData
+            fetch('/fact', {
+                method: 'POST'
             })
             .then(response => response.json())
             .then(data => {
+                loading.style.display = 'none';
+                factContainer.style.display = 'block';
+                
                 if (data.success) {
-                    const weather = data.data;
-                    weatherInfo.style.display = 'block';
-                    weatherInfo.innerHTML = `
-                        <div class="weather-detail">
-                            <strong>Location:</strong> ${weather.location}, ${weather.country}
-                        </div>
-                        <div class="weather-detail">
-                            <strong>Temperature:</strong> ${weather.temperature}°C
-                        </div>
-                        <div class="weather-detail">
-                            <strong>Condition:</strong> ${weather.condition}
-                        </div>
-                        <div class="weather-detail">
-                            <strong>Humidity:</strong> ${weather.humidity}%
-                        </div>
-                        <div class="weather-detail">
-                            <strong>Wind Speed:</strong> ${weather.wind_speed} km/h
+                    const fact = data.data;
+                    factContainer.innerHTML = `
+                        <div class="fact-text">${fact.text}</div>
+                        <div class="fact-source">
+                            Source: <a href="${fact.source_url}" target="_blank">${fact.source}</a>
                         </div>
                     `;
                 } else {
-                    weatherInfo.style.display = 'block';
-                    weatherInfo.innerHTML = `<div class="error">${data.error}</div>`;
+                    factContainer.innerHTML = `<div class="error">${data.error}</div>`;
                 }
             })
             .catch(error => {
-                weatherInfo.style.display = 'block';
-                weatherInfo.innerHTML = `<div class="error">Error fetching weather data</div>`;
+                loading.style.display = 'none';
+                factContainer.style.display = 'block';
+                factContainer.innerHTML = `<div class="error">Error fetching fact. Please try again.</div>`;
             });
         }
 
-        // Allow Enter key to trigger search
-        document.getElementById('city-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                getWeather();
-            }
-        });
+        // Load a fact when the page loads
+        window.onload = getFact;
     </script>
 </body>
 </html>
