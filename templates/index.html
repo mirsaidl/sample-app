@@ -1,9 +1,143 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
- <title>Sample app</title>
- <link rel="stylesheet" href="/static/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #0083b0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #00b4db;
+        }
+        #weather-info {
+            display: none;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .weather-detail {
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
- <h1>You are calling me from {{request.remote_addr}}</h1>
+    <div class="container">
+        <h1>Weather App</h1>
+        <div class="search-box">
+            <input type="text" id="city-input" placeholder="Enter city name" required>
+            <button onclick="getWeather()">Search</button>
+        </div>
+        <div id="weather-info"></div>
+    </div>
+
+    <script>
+        function getWeather() {
+            const cityInput = document.getElementById('city-input');
+            const weatherInfo = document.getElementById('weather-info');
+            const city = cityInput.value.trim();
+
+            if (!city) {
+                alert('Please enter a city name');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('city', city);
+
+            fetch('/weather', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const weather = data.data;
+                    weatherInfo.style.display = 'block';
+                    weatherInfo.innerHTML = `
+                        <div class="weather-detail">
+                            <strong>Location:</strong> ${weather.location}, ${weather.country}
+                        </div>
+                        <div class="weather-detail">
+                            <strong>Temperature:</strong> ${weather.temperature}°C
+                        </div>
+                        <div class="weather-detail">
+                            <strong>Condition:</strong> ${weather.condition}
+                        </div>
+                        <div class="weather-detail">
+                            <strong>Humidity:</strong> ${weather.humidity}%
+                        </div>
+                        <div class="weather-detail">
+                            <strong>Wind Speed:</strong> ${weather.wind_speed} km/h
+                        </div>
+                    `;
+                } else {
+                    weatherInfo.style.display = 'block';
+                    weatherInfo.innerHTML = `<div class="error">${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                weatherInfo.style.display = 'block';
+                weatherInfo.innerHTML = `<div class="error">Error fetching weather data</div>`;
+            });
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('city-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getWeather();
+            }
+        });
+    </script>
 </body>
 </html>
